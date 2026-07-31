@@ -1,0 +1,30 @@
+BWA4 / BMC FILE FORMAT
+======================
+
+All multibyte integers are little-endian.
+
+OFFSET  SIZE  DESCRIPTION
+------  ----  -----------
+00H       4   Signature: ASCII "BWA4"
+04H       2   Source sample rate: 2500
+06H       2   Packed payload byte count
+08H       1   Valid codes in final payload byte: 1 to 4
+09H       1   Initial DAC level: 128
+0AH       1   Small total delta: 6
+0BH       1   Large total delta: 34
+0CH       4   Original source sample count
+10H       -   Packed two-bit codes, four codes per byte, most significant first
+
+TWO-BIT CODE MAPPING
+--------------------
+00  Total delta -34   DAC increments -8, -9, -8, -9
+01  Total delta  -6   DAC increments -1, -2, -1, -2
+10  Total delta  +6   DAC increments +1, +2, +1, +2
+11  Total delta +34   DAC increments +8, +9, +8, +9
+
+Each source code therefore produces four MC1408 writes. At 2500 source
+samples per second the DAC is updated approximately 10000 times per second.
+
+The supplied fixed-cycle player is timed for a Z80 operating at approximately
+4 MHz. The four-code weighted timing for GAMES.BMC is exactly 1600 T-states
+per source sample on average, giving 2500 source samples per second.

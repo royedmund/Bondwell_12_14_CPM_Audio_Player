@@ -1,0 +1,16 @@
+ANALYSIS OF STANDARD RECORDING 2.MP3
+====================================
+
+The uploaded Bondwell recording is approximately 67.15 seconds long. The
+actual audio playback begins after roughly 3.3 seconds and lasts about 63.2
+seconds, which closely matches the 63.192-second source. This indicates that
+the original player's overall timing was already close to correct.
+
+The harsh character is therefore not primarily a playback-speed problem. The
+recording shows strong high-frequency sampling components associated with the
+original 2000-writes-per-second staircase output, together with the granular
+noise produced by one-bit fixed-step delta modulation.
+
+The replacement BWA4 player addresses both causes by using two-bit
+small/large differential codes and four interpolated MC1408 writes per source
+sample, raising the DAC update rate to approximately 10 kHz.
