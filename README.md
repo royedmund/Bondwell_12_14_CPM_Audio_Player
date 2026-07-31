@@ -7,6 +7,8 @@ This package replaces the earlier one-bit BWDM/DMC player and waveform with a
 new BWA4/BMC format designed to sound less rattly and squeaky on the Bondwell
 12/14 MC1408 DAC.
 
+https://youtu.be/Tx1pKgOmVMg
+
 COPY TO THE SAME CP/M DISK
 -------------------------
 BWPLAY.COM
