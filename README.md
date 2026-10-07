@@ -1,101 +1,72 @@
-# Bondwell_12_14_CPM_Audio_Player
+# Bondwell 12/14 CP/M audio player
 
-BONDWELL 12/14 SMOOTH MC1408 BMC PLAYER
-========================================
+A smooth BWA4/BMC audio player for the Bondwell 12/14 MC1408 DAC at I/O port `50H`. This replaces the earlier one-bit BWDM/DMC player and format.
 
-This package replaces the earlier one-bit BWDM/DMC player and waveform with a
-new BWA4/BMC format designed to sound less rattly and squeaky on the Bondwell
-12/14 MC1408 DAC.
+[Playback demonstration](https://youtu.be/Tx1pKgOmVMg)
 
-https://youtu.be/Tx1pKgOmVMg
+## Play the supplied sample
 
-COPY TO THE SAME CP/M DISK
--------------------------
-BWPLAY.COM
-GAMES.BMC
+Copy [BWPLAY.COM](BWPLAY.COM) and [GAMES.BMC](GAMES.BMC) to the same CP/M disk, then run:
 
-RUN
----
+```text
 A>BWPLAY
 Bondwell 12/14 MC1408 smooth 10 kHz BMC player - port 50H
 File to play (.BMC assumed): GAMES
+```
 
-The following filename forms are accepted:
+Accepted filenames include `GAMES`, `GAMES.BMC` and `B:GAMES.BMC`. The `.BMC` extension is added when omitted. The supplied BWA4 file requires this version of `BWPLAY.COM`; the earlier DMC player is incompatible.
 
-GAMES
-GAMES.BMC
-B:GAMES.BMC
+The player loads the entire file before playback to avoid floppy/Gotek gaps. It checks available TPA before each 128-byte read. Interrupts and keyboard input remain disabled while audio plays.
 
-BMC is added when the extension is omitted.
+## Format and timing
 
-IMPORTANT
----------
-GAMES.BMC uses the new BWA4 format and requires the BWPLAY.COM supplied in
-this package.  The earlier DMC player will not play this file.
+The earlier format used one bit per sample at 2000 samples/s and a fixed 13-count DAC step. The new format uses four 2-bit differential codes per byte, with total changes of ±6 or ±34 DAC counts per source sample. Four interpolated writes per sample reduce fixed-step chatter and move the main stair-step image toward 10 kHz.
 
-WHAT CHANGED
-------------
-The earlier format used one bit per sample at 2000 samples per second and a
-fixed step of 13 DAC counts.  Every sample had to move either up or down, even
-when the wanted waveform was nearly stationary.  This produced granular
-rattle and a strong audible sampling image around the DAC update rate.
+| Supplied sample property | Value |
+| --- | --- |
+| Format | BWA4, described in [BMC_FORMAT.TXT](BMC_FORMAT.TXT) |
+| Source sample rate | 2500 samples/s |
+| Nominal DAC update rate | 10000 writes/s |
+| Source samples / DAC writes | 157980 / 631920 |
+| Nominal duration at 4 MHz | 63.192 s |
+| Payload / total file size | 39495 / 39511 bytes |
+| Reconstructed DAC range | 20–232 |
 
-The new format uses:
+These timing values assume the intended 4 MHz CPU. Host-side validation estimates timing; it does not replace a hardware playback test.
 
-* 2500 source samples per second
-* 2-bit differential codes
-* small changes of +/-6 DAC counts
-* large changes of +/-34 DAC counts for steep waveform sections
-* four interpolated DAC writes for every source sample
-* approximately 10000 MC1408 writes per second
+## Host tools
 
-The four smaller DAC movements form a ramp between reconstructed samples.
-This moves the first major stair-step image from about 2 kHz to about 10 kHz
-and reduces the large fixed-step chatter of the original encoder.
+Use Python 3.9 or newer. The converter and format checks require NumPy; conversion and preview generation also require FFmpeg on `PATH`.
 
-GAMES.BMC DETAILS
------------------
-Source duration:              63.192 seconds
-Source sample rate:           2500 samples/second
-DAC update rate:              10000 writes/second
-Source samples:               157980
-DAC writes:                   631920
-Payload size:                 39495 bytes
-Total BMC size:               39511 bytes
-Reconstructed DAC range:      20 to 232
-DAC I/O port:                 50H
-Expected playback at 4 MHz:   63.192 seconds
+From the repository root:
 
-The complete BMC file is loaded before playback to avoid floppy or Gotek
-access gaps.  The player checks the CP/M BDOS address before each 128-byte
-read and reports an error if a selected file will not fit in available TPA.
-Interrupts and keyboard input remain disabled while audio is playing.
+```bash
+python3 TEST_BMC.py
+python3 BUILD_BWPLAY.py
+sha256sum -c SHA256.TXT
+```
 
-FILES
------
-BWPLAY.COM
-    Compiled CP/M player.
+The builder writes `BWPLAY.COM` and `BWPLAY.MAP` beside the script, replacing those generated files. Commit intentional rebuilds only after checking the differences.
 
-BWPLAY.ASM
-    Documented Z80 source.
+To convert your own WAV/MP3 source:
 
-GAMES.BMC
-    Newly converted BWA4 audio.
+```bash
+python3 MAKE_BMC.PY input.wav OUTPUT.BMC --preview OUTPUT_PREVIEW.wav
+```
 
-GAMES_SMOOTH10K_PREVIEW.wav
-    Computer-playable preview of the reconstructed 10 kHz DAC stream.
+The BWA4 payload limit is 65535 bytes, but the CP/M system's available TPA may impose a lower limit. Keep converted filenames compatible with CP/M's 8.3 convention.
 
-MAKE_BMC.PY
-    WAV/MP3-to-BMC conversion utility. Requires Python, NumPy and FFmpeg.
+## Repository layout
 
-BUILD_BWPLAY.py
-    Byte-exact builder used to generate BWPLAY.COM.
+| File | Purpose |
+| --- | --- |
+| [BWPLAY.ASM](BWPLAY.ASM) | Documented Z80 assembly source |
+| `BWPLAY.COM` / `BWPLAY.MAP` | Supplied executable and symbol map |
+| [BUILD_BWPLAY.py](BUILD_BWPLAY.py) | Byte-exact Python builder; no external assembler required |
+| [MAKE_BMC.PY](MAKE_BMC.PY) | WAV/MP3-to-BMC conversion utility |
+| [TEST_BMC.py](TEST_BMC.py) | Host checks for the supplied file's format, range and estimated timing |
+| `GAMES.BMC` / `GAMES_SMOOTH10K_PREVIEW.wav` | Sample audio and computer-playable reconstruction |
+| [RECORDING_ANALYSIS.TXT](RECORDING_ANALYSIS.TXT) | Recording notes |
+| [SHA256.TXT](SHA256.TXT) | Checksums for the listed source, documentation and sample files |
 
-TEST_BMC.py
-    Host-side format, range and timing validation.
-
-BMC_FORMAT.TXT
-    BWA4 file layout and code mapping.
-
-SHA256.TXT
-    File checksums.
+The flat layout deliberately keeps the CP/M files together and matches the host test paths. Supplied `.COM`, `.BMC` and preview files are intentional distribution assets. No standalone licence file is currently included.

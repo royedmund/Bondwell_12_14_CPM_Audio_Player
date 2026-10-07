@@ -1,0 +1,5 @@
+# Local Python environments and caches; supplied CP/M/media files remain tracked.
+__pycache__/
+*.py[cod]
+.venv/
+*.tmp.u8

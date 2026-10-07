@@ -10,7 +10,8 @@ BMC_RATE = 2500
 DELAY1_COUNT = 48
 DELAY2_COUNT = 42
 
-OUT = Path('/mnt/data/Bondwell_BMC_Smooth10K')
+# Keep generated files beside this script, independent of the working directory.
+OUT = Path(__file__).resolve().parent
 
 
 class Builder:
